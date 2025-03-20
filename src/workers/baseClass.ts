@@ -18,7 +18,7 @@ class BaseWorker {
         try {
             const kafkaClient = new Kafka({
                 clientId: process.env.KAFKA_CLIENT ?? 'default-client', // check null or undefined, whereas || checks all falsy values
-                brokers: ['kafka1:9092', 'kafka2:9092'],
+                brokers: ["localhost:9092"],
             });
             BaseWorker.kafkaClient = kafkaClient
             return kafkaClient
@@ -30,6 +30,10 @@ class BaseWorker {
 
     getTopicName() {
         return process.env.KAFKA_TOPIC ?? 'default-topic'
+    }
+
+    getGroupId() {
+        return process.env.KAFKA_GROUP_ID ?? 'default-group-id'
     }
 }
 
