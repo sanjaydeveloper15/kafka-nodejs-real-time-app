@@ -1,4 +1,7 @@
+import { Consumer, Kafka, Producer } from "kafkajs";
+import { KafkaBodyObj, TextObjI } from "../types";
 import BaseWorker from "./baseClass";
+import { catchExeception } from "../utils/helpers";
 
 class KafkaProducer extends BaseWorker {
 
@@ -7,19 +10,24 @@ class KafkaProducer extends BaseWorker {
         console.log(`invoked kafka producer`)
     }
 
-    async invoke(bodyObj: object) {
-        const kafka = await this.getKafkaClient()
-        const producer = kafka.producer()
+    async invoke(bodyObj: TextObjI): Promise<void> {
+        try {
+            const kafka: Kafka = await this.getKafkaClient()
+            const producer: Producer = kafka.producer()
 
-        await producer.connect()
-        await producer.send({
-            topic: this.getTopicName(),
-            messages: [
-                { value: JSON.stringify(bodyObj) },
-            ],
-        })
+            await producer.connect()
+            await producer.send({
+                topic: this.getTopicName(),
+                messages: [
+                    { value: bodyObj ? JSON.stringify(bodyObj) : '' },
+                ],
+            })
 
-        await producer.disconnect()
+            await producer.disconnect()
+        } catch (err: unknown) {
+            catchExeception(err)
+            throw err
+        }
     }
 }
 

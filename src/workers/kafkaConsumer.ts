@@ -1,4 +1,6 @@
+import { Consumer, EachMessagePayload, Kafka } from "kafkajs";
 import BaseWorker from "./baseClass";
+import { catchExeception } from "../utils/helpers";
 
 class KafkaConsumer extends BaseWorker {
 
@@ -7,27 +9,27 @@ class KafkaConsumer extends BaseWorker {
         console.log(`invoked kafka consumer`)
     }
 
-    async invoke() {
+    async invoke(): Promise<void> {
         try {
-        const kafka = await this.getKafkaClient()
-        const consumer = kafka.consumer({ groupId: this.getGroupId() })
+            const kafka: Kafka = await this.getKafkaClient()
+            const consumer: Consumer = kafka.consumer({ groupId: this.getGroupId() })
 
-        await consumer.connect()
-        await consumer.subscribe({topic: this.getTopicName(), fromBeginning: true})
-        
-        await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                const bodyObj: any = message.value?.toString()
-                console.log({
-                    value: JSON.parse(bodyObj),
-                    partition: partition,
-                    topic: topic
-                })
-            },
-        })
-        } catch (err: any) {
-            console.error(`KafkaConsumer error: ${err.message}`)
-            throw err
+            await consumer.connect()
+            await consumer.subscribe({ topic: this.getTopicName(), fromBeginning: true })
+
+            await consumer.run({
+                eachMessage: async ({ topic, partition, message }: EachMessagePayload): Promise<void> => {
+                    const bodyObj: string | undefined = message.value?.toString()
+                    console.log({
+                        value: bodyObj ? JSON.parse(bodyObj) : '',
+                        partition: partition,
+                        topic: topic
+                    })
+                },
+            })
+        } catch (err: unknown) {
+            catchExeception(err);
+            throw err;
         }
     }
 }

@@ -28,11 +28,11 @@ class BaseWorker {
         }
     }
 
-    getTopicName() {
+    getTopicName(): string {
         return process.env.KAFKA_TOPIC ?? 'default-topic'
     }
 
-    getGroupId() {
+    getGroupId(): string {
         return process.env.KAFKA_GROUP_ID ?? 'default-group-id'
     }
 }
